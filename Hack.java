@@ -2,16 +2,19 @@ import java.io.*;
 import java.util.*;
 // import java.Math.*;
 
-public class BetweennessCentrality{
+public class Hack{
 	
 	public static void main(String[] args){
-		if (args.length < 1){
-			System.out.println("Please give the data file URL as second argument");
+		if (args.length < 2){
+			System.out.println("Wrong syntax. Correct syntax: Hack [dataFile] [number of nodes to hack]");
 			System.exit(0);
 		}
 		try{
 			
 			Scanner scanner = new Scanner(new File(args[0]));
+			int noOfNodes = Integer.parseInt(args[1]);
+			System.out.println("no of nodes to hack: " + noOfNodes);
+
 			int noOfVertices = 0;
 			while (scanner.hasNext()) noOfVertices = Math.max(noOfVertices,scanner.nextInt());
 
@@ -27,7 +30,9 @@ public class BetweennessCentrality{
 				adjacencyList.get(v2).add(v1);
 			}
 
-			solve(adjacencyList, noOfVertices);
+			if (noOfNodes==1) solveOne(adjacencyList);
+			else solveGroup(adjacencyList,noOfNodes);
+
 		}
 		catch (Exception e){
 			e.printStackTrace();
@@ -35,10 +40,18 @@ public class BetweennessCentrality{
 		}
 	}
 
-	private static void solve(ArrayList<ArrayList<Integer>> adjacencyList, int noOfVertices){
-		System.out.println("No of vertices : "  + noOfVertices);
-		double[] cBindex = new double[noOfVertices];
+	private static double solveBetnessness(ArrayList<ArrayList<Integer>> adjacencyList, boolean isGroup,ArrayList<Integer> group,Integer chosen){
+		int noOfVertices = adjacencyList.size();
+
+		boolean[] isInGroup = new boolean[noOfVertices];
+		for (int i=0;i<noOfVertices;i++) isInGroup[i] = false;
+		for (int i=0;i<group.size();i++) isInGroup[group.get(i)] = true;
+
+
+		double[] cBindex = new double[noOfVertices];	
 		for (int i=0;i<noOfVertices;i++) cBindex[i]=0;
+		double groupCBindex = 0;
+		
 
 		for (int i=0;i<noOfVertices;i++){
 			int s = i;
@@ -84,17 +97,65 @@ public class BetweennessCentrality{
 
 			while (!stack.empty()){
 				int w = stack.pop();
+
 				for (int j=0;j<predecessors.get(w).size();j++){
 					int v = predecessors.get(w).get(j);
-					dependency[v] += ( (double)countPaths[v] ) /countPaths[w]*(1+dependency[w]);
+					if (isGroup && isInGroup[w]) {
+						dependency[v]=0;
+						groupCBindex += dependency[w];
+					} else {
+						dependency[v] += ( (double)countPaths[v] ) /countPaths[w]*(1+dependency[w]);
+					}
 				}
 				if (w != s) cBindex[w] += dependency[w];
 			}
 		}
 
 		for (int i=0;i<noOfVertices;i++) cBindex[i] /= 2;
-		for (int i=0;i<noOfVertices;i++){
-			System.out.println("CentralBetweenness index of vertex " + (i+1)+ " :" +cBindex[i]);
+		groupCBindex /= 2;
+
+		if (isGroup){
+			return groupCBindex;
 		}
+
+		chosen = 0;
+
+		for (int i=1;i<noOfVertices;i++)
+			if (cBindex[i]>cBindex[chosen])
+				chosen = i;
+
+		return cBindex[chosen]; 
 	}
+
+	private static void solveOne(ArrayList<ArrayList<Integer>> adjacencyList){
+		
+		Integer chosen = 1 ;
+		double maxCB = solveBetnessness(adjacencyList,false,new ArrayList<Integer>(),chosen);
+
+		System.out.println("Node to hack is "  + chosen + " with betweenness centrality of " + maxCB);
+		
+		
+
+
+		// for (int i=0;i<noOfVertices;i++) cBindex[i] /= 2;
+		// for (int i=0;i<noOfVertices;i++){
+		// 	System.out.println("CentralBetweenness index of vertex " + (i+1)+ " :" +cBindex[i]);
+		// }
+	}
+
+	private static void solveGroup(ArrayList<ArrayList<Integer>> adjacencyList,int noOfNodes){
+		
+		Integer chosen = 0;
+		double maxCB = solveBetnessness(adjacencyList,false,new ArrayList<Integer>(),chosen);
+
+		System.out.println("Node to hack is "  + chosen + " with betweenness centrality of " + maxCB);
+		
+
+
+		
+		// for (int i=0;i<noOfVertices;i++){
+		// 	System.out.println("CentralBetweenness index of vertex " + (i+1)+ " :" +cBindex[i]);
+		// }
+	}
+
 }
