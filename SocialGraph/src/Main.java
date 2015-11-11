@@ -57,7 +57,10 @@ public class Main {
 	
 	private void analyzeGraph() {
 		int diameter = getDiameter();
-		System.out.println(diameter);
+		System.out.println("DIAMETER: " + diameter);
+		
+		int averageNodeDegree = getAverageNodeDegree();
+		System.out.println("AVERAGE NODE DEGREE: " + averageNodeDegree);
 	}
 	
 	private int getDiameter() {
@@ -114,7 +117,16 @@ public class Main {
 		
 		return diameter;
 	}
-	
+
+	private int getAverageNodeDegree() {
+		int totalDegree = 0;
+		for(int node : this.nodes.keySet()) {
+			Vector<Integer> edges = this.nodes.get(node);
+			totalDegree += edges.size();
+		}
+		int averageNodeDegree = totalDegree / this.nodes.keySet().size();
+		return averageNodeDegree;
+	}
 
 	private void printGraph() {
 		Integer[] keys = this.nodes.keySet().toArray(new Integer[0]);
