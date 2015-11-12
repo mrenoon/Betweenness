@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Vector;
@@ -36,8 +37,8 @@ public class Main {
 			}
 			Scanner scanner = new Scanner(listOfFiles[i]);
 			while ( scanner.hasNext() ){
-				int v1 = scanner.nextInt() - 1;
-				int v2 = scanner.nextInt() - 1;
+				int v1 = scanner.nextInt();
+				int v2 = scanner.nextInt();
 				
 				Vector<Integer> v1Edges = nodes.get(v1);
 				if(v1Edges == null) {
@@ -72,20 +73,21 @@ public class Main {
 		}
 		int[][] distances = new int[nodeSize][nodeSize];
 		
-		//init as -1 (infinity)
+		//init as (infinity)
 		for (int i = 0; i < nodeSize; i++) {
 			for (int j = 0; j < nodeSize; j++) {
-				distances[i][j] = -1;
+				distances[i][j] = 100000;
 			}
 		}
 		
 		System.out.println("Prepare for Calculation");
+		//dist[v][v] ← 0
+		for (int node : nodes) {
+			distances[node][node] = 0;
+		}
+		//dist[u][v] ← 1
 		for (int u: nodes) {
-			Vector<Integer> edges = this.nodes.get(u);
-			for (int j = 0; j < edges.size(); j++) {
-				int v = edges.get(j);
-				if(u < 0 || v < 0)
-					continue;
+			for (int v : this.nodes.get(u)) {
 				distances[u][v] = 1;
 			}
 		}
@@ -93,15 +95,21 @@ public class Main {
 		System.out.println("Finding All Shortest Path");
 		// find all shortest paths
 		int progress = 0;
-		for (int k: nodes) {
+//		for (int k = 0; k < distances.length; k++) {
+//			System.out.println("Calculating..." + progress++ + "/" + nodeSize);
+//			for (int i = 0; i < distances.length; i++) {
+//				for (int j = 0; j < distances.length; j++) {
+//					if(distances[i][j] > distances[i][k] + distances[k][j])
+//						distances[i][j] = distances[i][k] + distances[k][j];
+//				}
+//			}
+//		}
+		for (int k : nodes) {
 			System.out.println("Calculating..." + progress++ + "/" + nodeSize);
 			for (int i : nodes) {
 				for (int j : nodes) {
-					if(i < 0 || j < 0 || k < 0)
-						continue;
-					if(distances[i][j] > distances[i][k] + distances[k][j]) {
+					if(distances[i][j] > distances[i][k] + distances[k][j])
 						distances[i][j] = distances[i][k] + distances[k][j];
-					}
 				}
 			}
 		}
